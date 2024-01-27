@@ -2,6 +2,7 @@
 
 public enum ContactKind
 {
+    Unknown,
     Personal,
     Work,
     Family

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Contacts.domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace Contacts.data;
 
@@ -17,4 +18,6 @@ public class ContactsDbContext: DbContext
         // applies configuration for all types that implement IEntityTypeConfiguration interface
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ContactsDbContext).Assembly);
     }
+
+    public DbSet<Contact> Contacts { get; set; }
 }

@@ -1,6 +1,10 @@
+using Contacts.data;
+using Contacts.data.Repositories;
+using Contacts.domain;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-////////////////// Add services
 // Using controllers (not minimal api)
 builder.Services.AddControllers();
 
@@ -8,9 +12,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddDbContext<ContactsDbContext>(
+    opt => opt.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        o => o.CommandTimeout(180).ExecutionStrategy(c => new SqlServerRetryingExecutionStrategy(c))
+    )
+);
+
+builder.Services.AddScoped<IRepository<Contact>, ContactsRepository>();
+
+
 var app = builder.Build();
 
-////////////////// Configure
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

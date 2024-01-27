@@ -13,14 +13,14 @@ public class ContactConfiguration : IEntityTypeConfiguration<Contact>
         builder.Property(c => c.Id).ValueGeneratedOnAdd();
         builder.Property(c => c.Name).IsRequired()
             .HasMaxLength(50);
-        builder.Property(c => c.Direccion).HasMaxLength(100);
+        builder.Property(c => c.Address).HasMaxLength(100);
         builder.Property(c => c.BirthDate)
-            .HasColumnType("date")
-            .HasDefaultValue(new DateOnly());
+            .HasColumnType("date");
         builder.Property(c => c.Email).HasMaxLength(100);
-        builder.Property(c => c.Type)
+        builder.Property(c => c.Kind)
             .IsRequired()
             .HasConversion<string>()
+            .HasSentinel(ContactKind.Work)
             .HasDefaultValue(ContactKind.Work);
     }
 }
