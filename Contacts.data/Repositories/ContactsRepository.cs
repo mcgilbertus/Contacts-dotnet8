@@ -77,6 +77,7 @@ public class ContactsRepository : IRepository<Contact>
             var contact = await _ctx.Contacts.FirstOrDefaultAsync(c => c.Id == id);
             if (contact is null)
                 return new ReturnCodeNotFound($"Contact {id} not found");
+            
             return new ReturnCodeSuccess<Contact>(contact);
         }
         catch (Exception e)
