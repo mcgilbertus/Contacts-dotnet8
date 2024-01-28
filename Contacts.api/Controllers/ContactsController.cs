@@ -18,7 +18,8 @@ public class ContactsController : ControllerBase
         return returnCode switch
         {
             ReturnCodeSuccess<ICollection<Contact>> result => Ok(result.Value.Select(ContactListModel.FromContact).ToList()),
-            ReturnCodeException result => StatusCode((int)HttpStatusCode.InternalServerError, result.Exception.Message)
+            ReturnCodeException result => StatusCode((int)HttpStatusCode.InternalServerError, result.Exception.Message),
+            _ => throw new ArgumentOutOfRangeException()
         };
     }
 
