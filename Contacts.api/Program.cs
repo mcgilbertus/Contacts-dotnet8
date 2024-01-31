@@ -1,6 +1,9 @@
+using Contacts.api.Models;
 using Contacts.data;
 using Contacts.data.Repositories;
 using Contacts.domain;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +24,7 @@ builder.Services.AddDbContext<ContactsDbContext>(
 
 builder.Services.AddScoped<IRepository<Contact>, ContactsRepository>();
 
+builder.Services.AddValidatorsFromAssemblyContaining<ContactUpdateModelValidator>();
 
 var app = builder.Build();
 

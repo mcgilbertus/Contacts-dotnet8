@@ -9,16 +9,23 @@ public class ContactCreateModel
     public string? BirthDate { get; set; }
     public string? Email { get; set; }
     public ContactKind Kind { get; set; }
-    
+
     public Contact ToContact()
     {
-        return new Contact
+        if (!IsValid()) throw new InvalidOperationException("Invalid model");
+
+        return new Contact()
         {
             Name = Name,
             Address = Address,
-            BirthDate = DateOnly.Parse(BirthDate),
+            BirthDate = BirthDate == null ? null : DateOnly.Parse(BirthDate),
             Email = Email,
             Kind = Kind
         };
+    }
+
+    public bool IsValid()
+    {
+        return Name != null && (BirthDate == null || DateOnly.TryParse(BirthDate, out _));
     }
 }
