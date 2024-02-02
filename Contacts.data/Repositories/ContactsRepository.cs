@@ -70,14 +70,14 @@ public class ContactsRepository : IRepository<Contact>
         }
     }
 
-    public async Task<ReturnCode> GetByIdAsync(int id)
+    public virtual async Task<ReturnCode> GetByIdAsync(int id)
     {
         try
         {
             var contact = await _ctx.Contacts.FirstOrDefaultAsync(c => c.Id == id);
             if (contact is null)
                 return new ReturnCodeNotFound($"Contact {id} not found");
-            
+
             return new ReturnCodeSuccess<Contact>(contact);
         }
         catch (Exception e)

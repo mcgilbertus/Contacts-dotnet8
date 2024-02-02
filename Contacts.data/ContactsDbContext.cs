@@ -5,10 +5,6 @@ namespace Contacts.data;
 
 public class ContactsDbContext: DbContext
 {
-    protected ContactsDbContext()
-    {
-    }
-
     public ContactsDbContext(DbContextOptions options) : base(options)
     {
     }

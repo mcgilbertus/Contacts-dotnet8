@@ -1,0 +1,5 @@
+{
+  "ConnectionStrings": {
+    "ContactsTestDb": "Server=(localdb)\\mssqllocaldb;Database=ContactosTest;Integrated Security=true"
+  }
+}
