@@ -1,40 +1,37 @@
-﻿using System.Linq.Expressions;
-using Contacts.data;
+﻿using Contacts.data;
 using Contacts.data.Repositories;
 using Contacts.Data.Tests.fixtures;
 using Contacts.domain;
 using Contacts.Infrastructure.ReturnCodes;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using NSubstitute.Extensions;
 
 namespace Contacts.Data.Tests;
 
 [Collection("SharedContextCollection")]
-public class ContactsRepositoryTests : IClassFixture<LocalConfigFixture>, IAsyncLifetime
+public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLifetime
 {
-    private readonly LocalConfigFixture _configFixture;
     private readonly ContactsDbContext _dbContext;
     private readonly ContactsRepository _repository;
 
-    public ContactsRepositoryTests(LocalConfigFixture configFixture)
+    public ContactsRepositoryTests(DbContextFixture ctxFixture)
     {
-        _configFixture = configFixture;
-        var dbOptions = new DbContextOptionsBuilder<ContactsDbContext>();
-        var conString = _configFixture.Configuration.GetConnectionString("ContactsTestDb");
-        dbOptions.UseSqlServer(conString);
-        _dbContext = new ContactsDbContext(dbOptions.Options);
+        _dbContext = (ContactsDbContext)ctxFixture.Context;
         _repository = new ContactsRepository(_dbContext);
     }
 
     public async Task InitializeAsync()
     {
-        await _dbContext.Database.EnsureDeletedAsync();
         await _dbContext.Database.EnsureCreatedAsync();
         await SeedTestDataAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _dbContext.Database.EnsureDeletedAsync();
+        _dbContext.ChangeTracker.Clear();
     }
 
     private async Task SeedTestDataAsync()
@@ -52,11 +49,6 @@ public class ContactsRepositoryTests : IClassFixture<LocalConfigFixture>, IAsync
         await _dbContext.SaveChangesAsync();
         await _dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Contacts OFF");
         await txn.CommitAsync();
-    }
-
-    public async Task DisposeAsync()
-    {
-        await _dbContext.Database.EnsureDeletedAsync();
     }
 
     #region GetAll
