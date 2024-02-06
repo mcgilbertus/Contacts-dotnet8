@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace Contacts.Data.Tests.fixtures;
+namespace Contacts.Infrastructure.testing;
 
 public class LocalConfigFixture
 {
