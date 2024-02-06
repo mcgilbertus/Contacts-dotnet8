@@ -1,4 +1,5 @@
 ﻿using Contacts.data;
+using Contacts.Infrastructure.testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 

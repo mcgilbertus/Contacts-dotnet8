@@ -10,7 +10,7 @@ using NSubstitute.Extensions;
 
 namespace Contacts.Data.Tests;
 
-[Collection("SharedContextCollection")]
+[Collection("DataCollection")]
 public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLifetime
 {
     private readonly ContactsDbContext _dbContext;
@@ -52,7 +52,7 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
     }
 
     #region GetAll
-    
+
     [Fact]
     public async Task GetAll_ReturnsList()
     {
@@ -65,20 +65,21 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
         contacts[1].Id.Should().Be(2);
         contacts[2].Id.Should().Be(3);
     }
-    
+
     [Fact]
     public async Task GetAll_NoDatabase_ReturnsException()
     {
         await _dbContext.Database.EnsureDeletedAsync();
-        
+
         var result = await _repository.GetAllAsync();
-        
+
         result.Should().BeOfType<ReturnCodeException>();
     }
 
     #endregion
 
     #region GetById
+
     [Fact]
     public async Task GetById_ExistentId_ReturnsContact()
     {
@@ -101,26 +102,34 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
     public async Task GetById_NoDatabase_ReturnsException()
     {
         await _dbContext.Database.EnsureDeletedAsync();
-        
+
         var result = await _repository.GetByIdAsync(1);
-        
+
         result.Should().BeOfType<ReturnCodeException>();
     }
-    
+
     #endregion
-    
+
     #region Add
-    
+
     [Fact]
     public async Task Create_ValidContact_ReturnsSuccess()
     {
         var newContact = new Contact { Name = "New Contact", Email = "new.contact@contacts.app", Kind = ContactKind.Work };
+
         var result = await _repository.AddAsync(newContact);
+
         result.Should().BeOfType<ReturnCodeSuccess<Contact>>();
         var contact = (result as ReturnCodeSuccess<Contact>)?.Value;
         contact.Should().NotBeNull();
         contact.Id.Should().BeGreaterThan(3);
         contact.Name.Should().Be("New Contact");
+        
+        // verify on the database directly
+        var name = await _dbContext.Database
+            .SqlQuery<string>($"SELECT Name as Value FROM Contacts WHERE Id = {contact.Id}")
+            .FirstOrDefaultAsync();
+        name.Should().Be("New Contact");
     }
 
     [Fact]
@@ -135,9 +144,9 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
     }
 
     #endregion
-    
+
     #region Update
-    
+
     [Fact]
     public async Task Update_ValidContact_ReturnsSuccess()
     {
@@ -148,7 +157,7 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
         };
 
         var updateResult = await _repository.UpdateAsync(1, updates);
-        
+
         updateResult.Should().BeOfType<ReturnCodeSuccess<Contact>>();
         var updatedContact = (updateResult as ReturnCodeSuccess<Contact>)?.Value;
         updatedContact.Should().NotBeNull();
@@ -156,6 +165,12 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
         updatedContact.Name.Should().Be("Updated Name");
         updatedContact.BirthDate.Should().Be(DateOnly.Parse("1999-01-01"));
         updatedContact.Address.Should().BeNull();
+                
+        // verify on the database directly
+        var name = await _dbContext.Database
+            .SqlQuery<string>($"SELECT Name as Value FROM Contacts WHERE Id = {updatedContact.Id}")
+            .FirstOrDefaultAsync();
+        name.Should().Be("Updated Name");
     }
 
     [Fact]
@@ -172,10 +187,10 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
         };
 
         var result = await repoMock.UpdateAsync(1, updates);
-        
+
         result.Should().BeOfType<ReturnCodeException>();
     }
-    
+
     [Fact]
     public async Task Update_NonExistentId_ReturnsNotFound()
     {
@@ -186,14 +201,14 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
         };
 
         var result = await _repository.UpdateAsync(99, updates);
-        
+
         result.Should().BeOfType<ReturnCodeNotFound>();
     }
-    
+
     #endregion
-    
+
     #region Delete
-    
+
     [Fact]
     public async Task Delete_ExistentId_ReturnsSuccess()
     {
@@ -204,8 +219,12 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
         contacts.Should().HaveCount(2);
         contacts[0].Id.Should().Be(2);
         contacts[1].Id.Should().Be(3);
+                
+        // verify on the database directly
+        var name = await _dbContext.Database.SqlQuery<string>($"SELECT Id as Value FROM Contacts WHERE Id = 1").FirstOrDefaultAsync();
+        name.Should().BeNull();
     }
-    
+
     [Fact]
     public async Task Delete_NoDatabase_ReturnsException()
     {
@@ -213,12 +232,12 @@ public class ContactsRepositoryTests : IClassFixture<DbContextFixture>, IAsyncLi
         var repoMock = Substitute.ForPartsOf<ContactsRepository>(_dbContext);
         repoMock.Configure().GetByIdAsync(default).ReturnsForAnyArgs(new ReturnCodeSuccess<Contact>(c1));
         await _dbContext.Database.EnsureDeletedAsync();
-        
+
         var result = await repoMock.DeleteAsync(1);
-        
+
         result.Should().BeOfType<ReturnCodeException>();
     }
-    
+
     [Fact]
     public async Task Delete_NonExistentId_ReturnsNotFound()
     {

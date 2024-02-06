@@ -40,3 +40,9 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+return;
+
+public partial class Program
+{
+}

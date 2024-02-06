@@ -26,6 +26,6 @@ public class ContactCreateModel
 
     public bool IsValid()
     {
-        return Name != null && (BirthDate == null || DateOnly.TryParse(BirthDate, out _));
+        return !string.IsNullOrEmpty(Name) && (BirthDate == null || DateOnly.TryParse(BirthDate, out _));
     }
 }
