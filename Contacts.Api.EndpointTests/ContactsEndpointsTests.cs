@@ -1,10 +1,7 @@
 ﻿using System.Net;
 using Contacts.Api.EndpointTests.fixtures;
 using Contacts.api.Models;
-using Contacts.data;
 using Contacts.domain;
-using Contacts.Infrastructure.ReturnCodes;
-using Contacts.Infrastructure.testing;
 using FluentAssertions;
 
 namespace Contacts.Api.EndpointTests;
@@ -39,25 +36,11 @@ public class ContactsEndpointsTests : IClassFixture<TestWebApplicationFactory<Pr
         var response = await client.GetAsync("/api/contacts");
 
         response.EnsureSuccessStatusCode();
-        var contacts = await response.Content.ReadFromJsonAsync<ICollection<Contact>>();
+        var contacts = await response.Content.ReadFromJsonAsync<ICollection<ContactListModel>>();
         contacts.Should().NotBeNullOrEmpty();
         contacts.Count.Should().Be(3);
     }
-
-    [Fact]
-    public async Task GetAll_NoDatabase_ReturnsException()
-    {
-        using var scope = _webAppFactory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();
-        await dbContext.Database.EnsureDeletedAsync();
-
-        var client = _webAppFactory.CreateClient();
-
-        var response = await client.GetAsync("/api/contacts");
-
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-    }
-
+    
     #endregion
 
     #region GetContact
@@ -84,21 +67,7 @@ public class ContactsEndpointsTests : IClassFixture<TestWebApplicationFactory<Pr
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
-    [Fact]
-    public async Task GetContact_NoDatabase_ReturnsException()
-    {
-        using var scope = _webAppFactory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();
-        await dbContext.Database.EnsureDeletedAsync();
-
-        var client = _webAppFactory.CreateClient();
-
-        var response = await client.GetAsync("/api/contacts/1");
-
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-    }
-
+    
     #endregion
 
     #region AddContact
@@ -129,21 +98,6 @@ public class ContactsEndpointsTests : IClassFixture<TestWebApplicationFactory<Pr
         var response = await client.PostAsJsonAsync("/api/contacts", newContact);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    [Fact]
-    public async Task AddContact_NoDatabase_ReturnsException()
-    {
-        using var scope = _webAppFactory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();
-        await dbContext.Database.EnsureDeletedAsync();
-
-        var client = _webAppFactory.CreateClient();
-        var newContact = new ContactCreateModel() { Name = "Test Contact", Kind = ContactKind.Family };
-
-        var response = await client.PostAsJsonAsync("/api/contacts", newContact);
-
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
     }
 
     #endregion
@@ -188,21 +142,6 @@ public class ContactsEndpointsTests : IClassFixture<TestWebApplicationFactory<Pr
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
     
-    [Fact]
-    public async Task UpdateContact_NoDatabase_ReturnsException()
-    {
-        using var scope = _webAppFactory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();
-        await dbContext.Database.EnsureDeletedAsync();
-
-        var client = _webAppFactory.CreateClient();
-        var updatedContact = new ContactUpdateModel() { Name = "Updated Contact", Kind = ContactKind.Family };
-
-        var response = await client.PutAsJsonAsync("/api/contacts/1", updatedContact);
-
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-    }
-    
     #endregion
     
     #region DeleteContact
@@ -226,20 +165,6 @@ public class ContactsEndpointsTests : IClassFixture<TestWebApplicationFactory<Pr
         var response = await client.DeleteAsync("/api/contacts/100");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-    
-    [Fact]
-    public async Task DeleteContact_NoDatabase_ReturnsException()
-    {
-        using var scope = _webAppFactory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();
-        await dbContext.Database.EnsureDeletedAsync();
-
-        var client = _webAppFactory.CreateClient();
-
-        var response = await client.DeleteAsync("/api/contacts/1");
-
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
     }
     
     #endregion

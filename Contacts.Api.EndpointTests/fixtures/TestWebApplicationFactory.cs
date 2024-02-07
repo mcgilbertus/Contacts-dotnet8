@@ -26,7 +26,7 @@ public class TestWebApplicationFactory<TProgram>: WebApplicationFactory<TProgram
 
             services.AddDbContext<ContactsDbContext>(options =>
             {
-                options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=ContactsTestDb;Integrated Security=true");
+                options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=ContactsTestDb;Integrated Security=true;TrustServerCertificate=true");
             });
             // the same technique could be used to replace other services like authentication, etc.
         });
@@ -36,9 +36,9 @@ public class TestWebApplicationFactory<TProgram>: WebApplicationFactory<TProgram
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();
-        // await dbContext.Database.EnsureDeletedAsync();
         await dbContext.Database.EnsureCreatedAsync();
-        
+
+        // clear the table
         await dbContext.Database.ExecuteSqlRawAsync("truncate table Contacts");
         dbContext.ChangeTracker.Clear();
 
@@ -49,6 +49,7 @@ public class TestWebApplicationFactory<TProgram>: WebApplicationFactory<TProgram
             new Contact { Id = 2, Name = "Jane Doe", Email = "jane.doe@contacts.app", Kind = ContactKind.Personal },
             new Contact { Id = 3, Name = "Santa Claus", Email = "santa.claus@northpole.com", Kind = ContactKind.Personal, BirthDate = new DateOnly(1901, 12, 1) }
         };
+        // insert the test data
         await using var txn = await dbContext.Database.BeginTransactionAsync();
         await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Contacts ON");
         await dbContext.Contacts.AddRangeAsync(contacts);
