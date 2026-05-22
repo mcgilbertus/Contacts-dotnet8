@@ -16,7 +16,7 @@ public class DbContextFixture: IDisposable
         _config = configFixture.Configuration;
         var dbOptions = new DbContextOptionsBuilder<ContactsDbContext>();
         var conString = _config.GetConnectionString("ContactsTestDb");
-        dbOptions.UseSqlServer(conString);
+        dbOptions.UseSqlite(conString);
         Context = new ContactsDbContext(dbOptions.Options);
     }
 

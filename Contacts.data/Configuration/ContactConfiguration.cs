@@ -14,8 +14,7 @@ public class ContactConfiguration : IEntityTypeConfiguration<Contact>
         builder.Property(c => c.Name).IsRequired()
             .HasMaxLength(50);
         builder.Property(c => c.Address).HasMaxLength(100);
-        builder.Property(c => c.BirthDate)
-            .HasColumnType("date");
+        builder.Property(c => c.BirthDate);
         builder.Property(c => c.Email).HasMaxLength(100);
         builder.Property(c => c.Kind)
             .IsRequired()

@@ -47,12 +47,8 @@ public class ContactsRepositoryRespawnTests : IAsyncLifetime
             new() { Id = 2, Name = "Jane Doe", Email = "jane.doe@contacts.app", Address = "234 Great Av", Kind = ContactKind.Work },
             new() { Id = 3, Name = "Contact3", Email = "contact3@contacts.app", Kind = ContactKind.Work, BirthDate = DateOnly.Parse("1990-11-02") },
         };
-        await using var txn = await _fixture.Context.Database.BeginTransactionAsync();
-        await _fixture.Context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Contacts ON");
         await _fixture.Context.Contacts.AddRangeAsync(contacts);
         await _fixture.Context.SaveChangesAsync();
-        await _fixture.Context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Contacts OFF");
-        await txn.CommitAsync();
     }
 
     #region GetAll

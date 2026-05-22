@@ -26,7 +26,7 @@ public class TestWebApplicationFactory<TProgram>: WebApplicationFactory<TProgram
 
             services.AddDbContext<ContactsDbContext>(options =>
             {
-                options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=ContactsTestDb;Integrated Security=true;TrustServerCertificate=true");
+                options.UseSqlite("Data Source=contacts_endpoint_test.db");
             });
             // the same technique could be used to replace other services like authentication, etc.
         });
@@ -39,7 +39,7 @@ public class TestWebApplicationFactory<TProgram>: WebApplicationFactory<TProgram
         await dbContext.Database.EnsureCreatedAsync();
 
         // clear the table
-        await dbContext.Database.ExecuteSqlRawAsync("truncate table Contacts");
+        await dbContext.Database.ExecuteSqlRawAsync("DELETE FROM Contacts");
         dbContext.ChangeTracker.Clear();
 
         // Seed the database with test data
@@ -49,12 +49,7 @@ public class TestWebApplicationFactory<TProgram>: WebApplicationFactory<TProgram
             new Contact { Id = 2, Name = "Jane Doe", Email = "jane.doe@contacts.app", Kind = ContactKind.Personal },
             new Contact { Id = 3, Name = "Santa Claus", Email = "santa.claus@northpole.com", Kind = ContactKind.Personal, BirthDate = new DateOnly(1901, 12, 1) }
         };
-        // insert the test data
-        await using var txn = await dbContext.Database.BeginTransactionAsync();
-        await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Contacts ON");
         await dbContext.Contacts.AddRangeAsync(contacts);
         await dbContext.SaveChangesAsync();
-        await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Contacts OFF");
-        await txn.CommitAsync();
     }
 }

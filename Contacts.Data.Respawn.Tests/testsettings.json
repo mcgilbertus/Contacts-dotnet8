@@ -1,12 +1,5 @@
 {
   "ConnectionStrings": {
-    "ContactsTestDb": "Server=(localdb)\\mssqllocaldb;Database=ContactDbTest;Trusted_Connection=True;TrustServerCertificate=true"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning",
-      "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
-    }
+    "ContactsTestDb": "Data Source=contacts_respawn_test.db"
   }
 }

@@ -16,10 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ContactsDbContext>(
-    opt => opt.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        o => o.CommandTimeout(180).ExecutionStrategy(c => new SqlServerRetryingExecutionStrategy(c))
-    )
+    opt => opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
 builder.Services.AddScoped<IRepository<Contact>, ContactsRepository>();
@@ -38,6 +35,12 @@ app.UseHttpsRedirection();
 
 // map routes to controllers
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();
+    db.Database.Migrate();
+}
 
 app.Run();
 
